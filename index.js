@@ -72,7 +72,6 @@ async function sendWebhook(embed, files) {
 
     await webhookClient.send({
         username: 'Tower of Fantasy Weibo',
-        avatarURL: 'https://i.imgur.com/AfFp7pu.png',
         files: files,
         embeds: [embed],
     });
