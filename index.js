@@ -12,7 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 
 let lastCheck = moment().subtract(1, 'days');
 
-cron.schedule('* * * * *', async () => {
+cron.schedule('*/15 * * * *', async () => {
 
     await fetchRss();
 
