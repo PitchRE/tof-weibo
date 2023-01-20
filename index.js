@@ -50,7 +50,7 @@ function checkIfNew(item) {
 
 async function processItem(item) {
 
-    console.log(`New Valid RSS Found (${item.link})`.green);
+
 
     const files = await getFiles(item.content)
 
@@ -68,7 +68,7 @@ async function processItem(item) {
 
         fs.unlink(files[0].attachment, (err) => {
             if (err) throw err //handle your error the way you want to;
-            console.log();//or else the file will be deleted
+            console.log(err);//or else the file will be deleted
         });
 
     }
@@ -149,7 +149,7 @@ function lastCheck() {
         try {
             const text = fs.readFileSync('last_check.txt',
                 { encoding: 'utf8', flag: 'r' });
-
+            fs.writeFileSync("last_check.txt", moment().toISOString());
             return moment(text);
         } catch (error) {
             console.log('Date reading error. Starting from scratch.');
@@ -157,5 +157,4 @@ function lastCheck() {
             return moment();
         }
     }
-
 }
