@@ -7,20 +7,25 @@ const fs = require("fs")
 const { EmbedBuilder, AttachmentBuilder, WebhookClient } = require('discord.js');
 let parser = new Parser();
 const { v4: uuidv4 } = require('uuid');
+const { exit } = require('process');
 
 
 
-let lastCheck = moment().subtract(1, 'days');
 
+if (process.env['WEBHOOK'] == null || process.env['WEBHOOK'] == '') {
+
+    console.error('Set WEBHOOK env variable in .env file.')
+    exit()
+}
 console.log("BOT IS RUNNING")
 
-cron.schedule('*/15 * * * *', async () => {
+
+
+cron.schedule('* * * * *', async () => {
 
     await fetchRss();
 
-    lastCheck = moment();
-
-    console.log('fetch done')
+    console.log(`${moment().toISOString()}: Fetch done`)
 
 });
 
@@ -33,16 +38,19 @@ async function fetchRss() {
     feed.items.forEach(async (item) => {
         if (checkIfNew(item)) await processItem(item)
     });
+
 }
 
 
 function checkIfNew(item) {
-    if (moment(item.isoDate) > lastCheck) return true;
-    return false;
+
+    return moment(item.isoDate) > lastCheck()
+
 }
 
 async function processItem(item) {
 
+    console.log(`New Valid RSS Found (${item.link})`.green);
 
     const files = await getFiles(item.content)
 
@@ -127,4 +135,27 @@ function getImgSrc(html) {
 
     return html.match(/<img [^>]*src="[^"]*"[^>]*>/gm)
         .map(x => x.replace(/.*src="([^"]*)".*/, '$1'));
+}
+
+
+function lastCheck() {
+
+
+    if (!fs.existsSync('last_check.txt')) {
+        fs.writeFileSync("last_check.txt", moment().toISOString());
+        console.log('Last Check Date Unavailable. Starting from scratch.')
+        return moment();
+    } else {
+        try {
+            const text = fs.readFileSync('last_check.txt',
+                { encoding: 'utf8', flag: 'r' });
+
+            return moment(text);
+        } catch (error) {
+            console.log('Date reading error. Starting from scratch.');
+            fs.writeFileSync("last_check.txt", moment().toISOString());
+            return moment();
+        }
+    }
+
 }
